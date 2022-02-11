@@ -1,20 +1,15 @@
-import 'package:flutter/foundation.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+class ProductEntity {
+  final int id;
+  final String image;
+  final String title;
+  final String description;
+  final String category;
 
-part 'product.freezed.dart';
-
-part 'product.g.dart';
-
-@freezed
-class Product with _$Product {
-  const factory Product({
-    required int id,
-    required String title,
-    required String description,
-    required String category,
-    required String image,
-  }) = _Product;
-
-  factory Product.fromJson(Map<String, dynamic> json) =>
-      _$ProductFromJson(json);
+  const ProductEntity({
+    required this.image,
+    required this.description,
+    required this.category,
+    required this.id,
+    required this.title,
+  });
 }

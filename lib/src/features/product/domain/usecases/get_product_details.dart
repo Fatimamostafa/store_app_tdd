@@ -4,13 +4,13 @@ import 'package:cc_flutter/src/features/product/domain/entities/product.dart';
 import 'package:cc_flutter/src/features/product/domain/repositories/product_repository.dart';
 import 'package:dartz/dartz.dart';
 
-class GetProductDetailsUseCase implements UseCase<Product, Params> {
+class GetProductDetailsUseCase implements UseCase<ProductEntity, Params> {
   final ProductRepository repository;
 
   GetProductDetailsUseCase(this.repository);
 
   @override
-  Future<Either<Failure, Product>> call(Params params) async {
+  Future<Either<Failure, ProductEntity>> call(Params params) async {
     return await repository.getProductDetails(params.productId);
   }
 }

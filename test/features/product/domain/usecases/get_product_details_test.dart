@@ -10,7 +10,7 @@ class MockProductRepository extends Mock implements ProductRepository {}
 void main() {
   int productId = 1;
 
-  Product product = Product(
+  ProductEntity product = ProductEntity(
     id: productId,
     title: 'title1',
     description: 'description1',

@@ -9,15 +9,15 @@ import 'package:mocktail/mocktail.dart';
 class MockProductRepository extends Mock implements ProductRepository {}
 
 void main() {
-  List<Product> products = <Product>[
-    const Product(
+  List<ProductEntity> products = <ProductEntity>[
+    const ProductEntity(
       id: 1,
       title: 'title1',
       description: 'description1',
       category: 'category1',
       image: 'imageUrl1',
     ),
-    const Product(
+    const ProductEntity(
       id: 2,
       title: 'title2',
       description: 'description2',
