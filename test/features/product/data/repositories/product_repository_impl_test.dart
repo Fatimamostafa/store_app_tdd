@@ -1,4 +1,6 @@
-import 'package:cc_flutter/src/core/platform/network_info.dart';
+import 'package:cc_flutter/src/core/error/exception.dart';
+import 'package:cc_flutter/src/core/error/failure.dart';
+import 'package:cc_flutter/src/core/network/network_info.dart';
 import 'package:cc_flutter/src/features/product/data/datasources/product_local_datasource.dart';
 import 'package:cc_flutter/src/features/product/data/datasources/product_remote_datasource.dart';
 import 'package:cc_flutter/src/features/product/data/models/product.dart';
@@ -31,6 +33,26 @@ void main() {
     );
   });
 
+  void runTestsOnline(Function body) {
+    group('device is online', () {
+      setUp(() {
+        when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
+      });
+
+      body();
+    });
+  }
+
+  void runTestsOffline(Function body) {
+    group('device is offline', () {
+      setUp(() {
+        when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+      });
+
+      body();
+    });
+  }
+
   group('getProductList', () {
     const productList = <ProductModel>[
       ProductModel(
@@ -59,11 +81,7 @@ void main() {
       verify(() => mockNetworkInfo.isConnected);
     });
 
-    group('deviceIsOnline', () {
-      setUp(() {
-        when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-      });
-
+    runTestsOnline(() {
       test(
           'should return remote data when the call to remote data source is successful',
           () async {
@@ -76,14 +94,63 @@ void main() {
         verify(() => mockRemoteDataSource.getProductList());
         expect(result, const Right(productEntityList));
       });
+
+      test(
+          'should cache the data locally when the call to remote data source is successful',
+          () async {
+        when(() => mockRemoteDataSource.getProductList())
+            .thenAnswer((_) async => productList);
+
+        await repository.getProductList();
+
+        //assert
+        verify(() => mockRemoteDataSource.getProductList());
+        verify(() => mockLocalDataSource.cacheProductList(productList));
+      });
     });
 
-    group('deviceIsOffline', () {
-      setUp(() {
-        when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+    test(
+        'should return server failure when the call to remote data source is unsuccessful',
+        () async {
+      when(() => mockRemoteDataSource.getProductList())
+          .thenThrow((ServerException()));
+
+      final result = await repository.getProductList();
+
+      //assert
+      verify(() => mockRemoteDataSource.getProductList());
+      verifyZeroInteractions(mockLocalDataSource);
+
+      expect(result, const Left(Failure([])));
+    });
+
+    runTestsOffline(() {
+      test(
+          'should return last locally cached data when the cached data is present',
+          () async {
+        when(() => mockLocalDataSource.getProductItems())
+            .thenAnswer((_) async => productList);
+
+        final result = await repository.getProductList();
+
+        verifyZeroInteractions(mockRemoteDataSource);
+        verify(() => mockLocalDataSource.getProductItems());
+
+        expect(result, const Right(productEntityList));
       });
 
-      test('should check if the device is offline', () async {});
+      test('should return failure when the cached data is not present',
+          () async {
+        when(() => mockLocalDataSource.getProductItems())
+            .thenThrow(CacheException());
+
+        final result = await repository.getProductList();
+
+        verifyZeroInteractions(mockRemoteDataSource);
+        verify(() => mockLocalDataSource.getProductItems());
+
+        expect(result, const Left(Failure([])));
+      });
     });
   });
 }

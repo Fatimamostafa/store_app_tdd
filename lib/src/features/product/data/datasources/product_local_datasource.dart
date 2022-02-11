@@ -4,7 +4,7 @@ abstract class ProductLocalDataSource {
   /// Gets cached list of [ProductModel] from the last fetch.
   ///
   /// Throws [CacheException] if no cached data is present.
-  Future<List<ProductModel>> getProductItems();
+  Future<List<ProductModel>>? getProductItems();
 
-  Future<void> cacheProduct(ProductModel productToCache);
+  Future<void>? cacheProductList(List<ProductModel> list);
 }

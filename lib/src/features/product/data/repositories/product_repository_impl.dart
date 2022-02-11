@@ -1,10 +1,11 @@
+import 'package:cc_flutter/src/core/error/exception.dart';
 import 'package:cc_flutter/src/core/error/failure.dart';
 import 'package:cc_flutter/src/features/product/data/datasources/product_remote_datasource.dart';
 import 'package:cc_flutter/src/features/product/domain/entities/product.dart';
 import 'package:cc_flutter/src/features/product/domain/repositories/product_repository.dart';
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/platform/network_info.dart';
+import '../../../../core/network/network_info.dart';
 import '../datasources/product_local_datasource.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
@@ -26,7 +27,21 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<Either<Failure, List<ProductEntity>>> getProductList() async {
-    networkInfo.isConnected;
-    return Right(await remoteDataSource.getProductList());
+    if (await networkInfo.isConnected == true) {
+      try {
+        final result = await remoteDataSource.getProductList();
+        localDataSource.cacheProductList(result);
+        return Right(result);
+      } on ServerException {
+        return const Left(Failure([]));
+      }
+    } else {
+      try {
+        final localProductList = await localDataSource.getProductItems();
+        return Right(localProductList!);
+      } on CacheException {
+        return const Left(Failure([]));
+      }
+    }
   }
 }
