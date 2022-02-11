@@ -4,10 +4,10 @@ abstract class ProductRemoteDataSource {
   /// Calls the https://fakestoreapi.com/products endpoint.
   ///
   /// Throws a [ServerException] for all error codes.
-  Future<List<ProductModel>> getProductList();
+  Future<List<ProductModel>?> getProductList();
 
   /// Calls the https://fakestoreapi.com/products/{id} endpoint.
   ///
   /// Throws a [ServerException] for all error codes.
-  Future<ProductModel> getProductDetails(int id);
+  Future<ProductModel>? getProductDetails(int id);
 }

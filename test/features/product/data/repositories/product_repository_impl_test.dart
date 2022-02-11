@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cc_flutter/src/core/error/exception.dart';
 import 'package:cc_flutter/src/core/error/failure.dart';
 import 'package:cc_flutter/src/core/network/network_info.dart';
@@ -9,6 +11,8 @@ import 'package:cc_flutter/src/features/product/domain/entities/product.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+
+import '../../../../fixtures/fixture_reader.dart';
 
 class MockRemoteDataSource extends Mock implements ProductRemoteDataSource {}
 
@@ -54,27 +58,17 @@ void main() {
   }
 
   group('getProductList', () {
-    const productList = <ProductModel>[
-      ProductModel(
-        id: 1,
-        title: 'title1',
-        description: 'description1',
-        category: 'category1',
-        image: 'imageUrl1',
-      ),
-      ProductModel(
-        id: 2,
-        title: 'title2',
-        description: 'description2',
-        category: 'category2',
-        image: 'imageUrl2',
-      ),
-    ];
+    final productList = (jsonDecode(fixture('product_list.json')) as List)
+        .map((i) => ProductModel.fromJson(i))
+        .toList();
 
-    const List<ProductEntity> productEntityList = productList;
+    List<ProductEntity> productEntityList = productList;
 
     test('should check if the device is online', () async {
       when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
+
+      when(() => mockRemoteDataSource.getProductList())
+          .thenAnswer((_) async => productList);
 
       repository.getProductList();
 
@@ -92,7 +86,7 @@ void main() {
 
         //assert
         verify(() => mockRemoteDataSource.getProductList());
-        expect(result, const Right(productEntityList));
+        expect(result, equals(Right(productEntityList)));
       });
 
       test(
@@ -121,7 +115,7 @@ void main() {
       verify(() => mockRemoteDataSource.getProductList());
       verifyZeroInteractions(mockLocalDataSource);
 
-      expect(result, const Left(Failure([])));
+      expect(result, equals(Left(ServerFailure())));
     });
 
     runTestsOffline(() {
@@ -136,7 +130,7 @@ void main() {
         verifyZeroInteractions(mockRemoteDataSource);
         verify(() => mockLocalDataSource.getProductItems());
 
-        expect(result, const Right(productEntityList));
+        expect(result, equals(Right(productEntityList)));
       });
 
       test('should return failure when the cached data is not present',
@@ -149,7 +143,7 @@ void main() {
         verifyZeroInteractions(mockRemoteDataSource);
         verify(() => mockLocalDataSource.getProductItems());
 
-        expect(result, const Left(Failure([])));
+        expect(result, equals(Left(CacheFailure())));
       });
     });
   });

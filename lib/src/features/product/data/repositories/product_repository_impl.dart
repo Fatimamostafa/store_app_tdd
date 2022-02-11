@@ -30,17 +30,17 @@ class ProductRepositoryImpl implements ProductRepository {
     if (await networkInfo.isConnected == true) {
       try {
         final result = await remoteDataSource.getProductList();
-        localDataSource.cacheProductList(result);
+        localDataSource.cacheProductList(result!);
         return Right(result);
       } on ServerException {
-        return const Left(Failure([]));
+        return Left(ServerFailure());
       }
     } else {
       try {
         final localProductList = await localDataSource.getProductItems();
-        return Right(localProductList!);
+        return Right(localProductList as List<ProductEntity>);
       } on CacheException {
-        return const Left(Failure([]));
+        return Left(CacheFailure());
       }
     }
   }
