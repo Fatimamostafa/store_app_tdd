@@ -1,4 +1,4 @@
-// ignore_for_file: sized_box_for_whitespace
+
 
 import 'package:cc_flutter/injection_container.dart';
 import 'package:cc_flutter/src/features/product/presentation/bloc/product_bloc.dart';
@@ -37,7 +37,7 @@ class ProductListPage extends StatelessWidget {
           } else if (state is Error) {
             return MessageDisplay(message: state.message);
           }
-          return Container(
+          return SizedBox(
             height: MediaQuery.of(context).size.height / 3,
             child: const Placeholder(),
           );
