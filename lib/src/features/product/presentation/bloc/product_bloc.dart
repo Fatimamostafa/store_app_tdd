@@ -29,6 +29,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     on<GetProductList>((event, emit) async {
       emit(Loading());
       final response = await getProductList(NoParams());
+      print('response: $response');
       response!.fold((failure) {
         emit(Error(message: _mapFailureToMessage(failure)));
       }, (list) {

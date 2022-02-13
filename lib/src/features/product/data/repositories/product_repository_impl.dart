@@ -30,6 +30,7 @@ class ProductRepositoryImpl implements ProductRepository {
     if (await networkInfo.isConnected == true) {
       try {
         final result = await remoteDataSource.getProductList();
+        print('result: $result');
         localDataSource.cacheProductList(result!);
         return Right(result);
       } on ServerException {
